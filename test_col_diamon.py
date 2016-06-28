@@ -3,6 +3,7 @@ from datetime import timedelta
 from flask import Flask,Blueprint,session,render_template,request,url_for,redirect
 from flask_login import LoginManager,login_required,login_user,logout_user,UserMixin,current_user
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:mysql123@localhost/diamond_agent'
 #app.config['SQLALCHEMY_DATABASE_URI']='sqlite:////root/test/0618/flask_pro/mydb.db'
@@ -12,10 +13,15 @@ db= SQLAlchemy(app)
 class User(db.Model,UserMixin):
     id=db.Column(db.Integer,primary_key=True)
     username=db.Column(db.String(80),unique=True)
-    password=db.Column(db.String(128))
-    def __init__(self,name,passwd):
-        self.username=name
-        self.password=passwd
+    password_hash=db.Column(db.String(128))
+    @property
+    def password(self):
+        return self.password_hash
+    @property.setter
+    def password(self,passwd):
+        self.password_hash=generate_password_hash(passwd)
+    @verity_password(self,passwd):
+        return check_password_hash(self.password_hash,passwd) 
     def is_authenticated(self):
         return True
     def is_active(self):
@@ -75,19 +81,37 @@ auth = Blueprint('auth',__name__)
 @auth.route('/login/',methods=['GET','POST'])
 def logi():
     if request.method=='POST':
-        user = User.query.filter_by(username=request.form['uname'],password=request.form['passwd']).first()
+        user = User.query.filter_by(username=request.form['uname']).first()
         if user is not None:
-            print session
-            login_user(user)
-            session.permanent=True
-            app.permanent_session_lifetime=timedelta(minutes=1)
-            print session
-            if request.args.get('next'): 
-                return redirect(request.args.get('next'))
-            return '{0} login page'.format(current_user.username)
+            if user.verity_password(request.form['passwd']):
+                print session
+                login_user(user)
+                session.permanent=True
+                app.permanent_session_lifetime=timedelta(minutes=1)
+                print session
+                if request.args.get('next'): 
+                    return redirect(request.args.get('next'))
+                return '{0} login page'.format(current_user.username)
+            return render_template('login.html')
         return render_template('login.html')
     else:
         return render_template('login.html')
+
+@auth.route('/signup/',methods=['GET','POST'])
+def signu():
+    if request.method=='POST':
+        user = User.query.filter_by(username=request.form['uname']).first()
+        if user:
+            return render_template('signup.html',{'tip':'username is used,please use anther name'})
+        else:
+            new_user=User()
+            new_user.username=request.form['uname']
+            new_user.password=request.form['passwd']
+            db.session.add(new_user)
+            db.session.commit()
+            return 'sign up success'
+    else:
+        return render_template('signup.html',{'tip':'welcome to sign up'})
 
 @auth.route('/logout/',methods=['GET','POST'])
 @login_required
