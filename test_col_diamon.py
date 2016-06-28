@@ -17,10 +17,10 @@ class User(db.Model,UserMixin):
     @property
     def password(self):
         return self.password_hash
-    @property.setter
+    @password.setter
     def password(self,passwd):
         self.password_hash=generate_password_hash(passwd)
-    @verity_password(self,passwd):
+    def verity_password(self,passwd):
         return check_password_hash(self.password_hash,passwd) 
     def is_authenticated(self):
         return True
@@ -102,7 +102,7 @@ def signu():
     if request.method=='POST':
         user = User.query.filter_by(username=request.form['uname']).first()
         if user:
-            return render_template('signup.html',{'tip':'username is used,please use anther name'})
+            return render_template('signup.html',tip='username is used,please use anther name')
         else:
             new_user=User()
             new_user.username=request.form['uname']
@@ -111,7 +111,7 @@ def signu():
             db.session.commit()
             return 'sign up success'
     else:
-        return render_template('signup.html',{'tip':'welcome to sign up'})
+        return render_template('signup.html',tip='welcome to sign up')
 
 @auth.route('/logout/',methods=['GET','POST'])
 @login_required
