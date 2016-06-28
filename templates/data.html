@@ -1,0 +1,11 @@
+<html>
+<title>show data item</title>
+<body>
+<table border='1'>
+<tr><th>id</th><th>itempath</th><th>itemvalue</th><th>itemtimestamp</th><th>category_id</th></tr>
+{% for data_one in data_list%}
+<tr><td>{{data_one.id}}</td><td>{{data_one.itempath}}</td><td>{{data_one.itemvalue}}</td><td>{{data_one.itemstimestamp}}</td><td>{{data_one.category_id}}</td></tr>
+{% endfor %}
+</table>
+</body>
+</html>
