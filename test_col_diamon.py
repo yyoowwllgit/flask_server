@@ -5,8 +5,8 @@ from flask_login import LoginManager,login_required,login_user,logout_user,UserM
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:mysql123@localhost/diamond_agent'
-#app.config['SQLALCHEMY_DATABASE_URI']='sqlite:////root/test/0618/flask_pro/mydb.db'
+#app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:mysql123@localhost/diamond_agent'
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:////root/test/testgit/flask_server/mydb2.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=True
 db= SQLAlchemy(app)
 
@@ -78,6 +78,11 @@ def load_use(uid):
 #end new code
 
 auth = Blueprint('auth',__name__)
+@auth.before_request
+def before_request():
+    return "before_request"
+
+
 @auth.route('/login/',methods=['GET','POST'])
 def logi():
     if request.method=='POST':

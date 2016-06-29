@@ -1,0 +1,14 @@
+Wed,, Jun Jun 2016 22:36:24 mylog.py[line:15] 5498 this is error
+Wed,, Jun Jun 2016 22:37:06 mylog.py[line:12] 5502 this is debug
+Wed,, Jun Jun 2016 22:37:06 mylog.py[line:13] 5502 this is info
+Wed,, Jun Jun 2016 22:37:06 mylog.py[line:14] 5502 this is warning
+Wed,, Jun Jun 2016 22:37:06 mylog.py[line:15] 5502 this is error
+Wed,, Jun Jun 2016 22:38:58 mylog.py[line:12] 5525 this is debug
+Wed,, Jun Jun 2016 22:38:58 mylog.py[line:13] 5525 this is info
+Wed,, Jun Jun 2016 22:38:58 mylog.py[line:14] 5525 this is warning
+Wed,, Jun Jun 2016 22:38:58 mylog.py[line:15] 5525 this is error
+Wed,, Jun Jun 2016 22:40:59 <stdin>[line:1] 5552 mytest
+Wed,, Jun Jun 2016 22:42:32 mylog.py[line:13] DEBUG pid:5575 this is debug
+Wed,, Jun Jun 2016 22:42:32 mylog.py[line:14] INFO pid:5575 this is info
+Wed,, Jun Jun 2016 22:42:32 mylog.py[line:15] WARNING pid:5575 this is warning
+Wed,, Jun Jun 2016 22:42:32 mylog.py[line:16] ERROR pid:5575 this is error
