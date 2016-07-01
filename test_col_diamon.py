@@ -1,9 +1,10 @@
 #encoding=utf-8
 from datetime import timedelta
-from flask import Flask,Blueprint,session,render_template,request,url_for,redirect
+from flask import Flask,Blueprint,session,render_template,request,url_for,redirect,abort
 from flask_login import LoginManager,login_required,login_user,logout_user,UserMixin,current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 app = Flask(__name__)
 #app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:mysql123@localhost/diamond_agent'
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:////root/test/testgit/flask_server/mydb2.db'
@@ -14,6 +15,20 @@ class User(db.Model,UserMixin):
     id=db.Column(db.Integer,primary_key=True)
     username=db.Column(db.String(80),unique=True)
     password_hash=db.Column(db.String(128))
+    role_id=db.Column(db.Integer,db.ForeignKey('role.id'))
+    def __init__(self,**kwargs):
+        super(User,self).__init__(**kwargs)
+        if self.role is None:
+            if self.username=='admin':
+                self.role=Role.query.filter_by(permission=0b111).first()
+            if self.role is None:
+                self.role=Role.query.filter_by(default=True).first()
+    def can(self,permissions):
+        return self.role is not None and \
+            (self.role.permission&permissions) == permissions
+    def is_admin(self):
+        return self.can(Permission.delete_able)
+    
     @property
     def password(self):
         return self.password_hash
@@ -22,12 +37,6 @@ class User(db.Model,UserMixin):
         self.password_hash=generate_password_hash(passwd)
     def verity_password(self,passwd):
         return check_password_hash(self.password_hash,passwd) 
-    def is_authenticated(self):
-        return True
-    def is_active(self):
-        return True
-    def is_anonymous(self):
-        return False
     def get_id(self):
         return unicode(self.id)
     def __repr__(self):
@@ -56,7 +65,44 @@ class Category(db.Model):
         self.itempath=itempath
     def __repr__(self):
         return '<Category>:{0}'.format(self.itempath)
+class Permission():
+    read_able=0b1
+    write_able=0b10
+    delete_able=0b100
+class Role(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    rolename=db.Column(db.String(80))
+    permission=db.Column(db.Integer)
+    default=db.Column(db.Boolean,default=True,index=True)
+    users=db.relationship('User',backref='role',lazy='dynamic')
+    @staticmethod
+    def insert_roles():
+        roles={
+            'user':(Permission.read_able,True),
+            'manager':(Permission.read_able|Permission.write_able|\
+                Permission.delete_able,False),
+                }
+        for r in roles:
+            role = Role.query.filter_by(rolename=r).first()
+            if role is None:
+                role=Role(rolename=r)
+            role.permission=roles.get(r)[0]
+            role.default=roles.get(r)[1]
+            db.session.add(role)
+        db.session.commit()
 
+def permission_required(permission):
+    def decoractor(fun):
+        @wraps(fun)
+        def decorated_function(*args,**kwargs):
+            if not current_user.can(permission):
+                abort(403)
+            return fun(*args,**kwargs)
+        return decorated_function
+    return decoractor
+
+def admin_required(fun):
+    return permission_required(0b100)(fun)
 #new code
 app.secret_key='\xe1\x1a\xc7tP'
 login_manager=LoginManager()
@@ -78,7 +124,7 @@ def load_use(uid):
 #end new code
 
 auth = Blueprint('auth',__name__)
-@auth.before_request
+#@auth.before_request
 def before_request():
     return "before_request"
 
@@ -127,6 +173,7 @@ def logo():
 @app.route('/')
 @app.route('/index/')
 @login_required
+@admin_required
 def test():
     return 'yes,you are allowed,{0}'.format(current_user.username)
 
