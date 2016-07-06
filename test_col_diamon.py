@@ -140,7 +140,9 @@ def logi():
                 session.permanent=True
                 app.permanent_session_lifetime=timedelta(minutes=1)
                 print session
-                flash('congratulation %s,you login success'%current_user.username)
+                flash('congratulation %s,you login success'%'daming')
+                flash('congratulation %s,you login success'%'xiaoming','error')
+                flash('congratulation %s,you login success'%current_user.username,'ok')
                 if request.args.get('next'): 
                     return redirect(request.args.get('next'))
                 #return '{0} login page'.format(current_user.username)
