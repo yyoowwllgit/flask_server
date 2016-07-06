@@ -1,6 +1,6 @@
 #encoding=utf-8
 from datetime import timedelta
-from flask import Flask,Blueprint,session,render_template,request,url_for,redirect,abort
+from flask import Flask,Blueprint,session,render_template,request,url_for,redirect,abort,flash
 from flask_login import LoginManager,login_required,login_user,logout_user,UserMixin,current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -140,9 +140,11 @@ def logi():
                 session.permanent=True
                 app.permanent_session_lifetime=timedelta(minutes=1)
                 print session
+                flash('congratulation %s,you login success'%current_user.username)
                 if request.args.get('next'): 
                     return redirect(request.args.get('next'))
-                return '{0} login page'.format(current_user.username)
+                #return '{0} login page'.format(current_user.username)
+                return render_template('index.html')
             return render_template('login.html')
         return render_template('login.html')
     else:
@@ -175,7 +177,8 @@ def logo():
 @login_required
 @admin_required
 def test():
-    return 'yes,you are allowed,{0}'.format(current_user.username)
+    #return 'yes,you are allowed,{0}'.format(current_user.username)
+    return render_template('index.html')
 
 @app.route('/data/')
 @login_required

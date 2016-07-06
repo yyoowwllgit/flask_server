@@ -1,6 +1,17 @@
 <html>
 <title>welcome to login</title>
 <body>
+{%with messages=get_flashed_messages()%}
+{%if messages%}
+{%for message in messages%}
+<ul><li>
+<strong>
+{{message}}
+</strong>
+</li></ul>
+{%endfor%}
+{%endif%}
+{% endwith %}
 <form method='post' enctype='multipart/form-data' charset='utf-8'>
 username:<input type='text' name='uname'/><br/>
 password:<input type='password' name='passwd'/><br/>
