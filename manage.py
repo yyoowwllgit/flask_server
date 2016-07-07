@@ -12,6 +12,9 @@ app.config['FLASKY_ADMIN']=os.environ.get('FLASKY_ADMIN')
 app.config['FLASKY_MAIL_SUBJECT_PREFIX']='[Flasky]'
 app.config['FLASKY_MAIL_SENDER']='Flasky Admin <huangpeng1a@sina.com>'
 
+mail=Mail(app)
+manager=Manager(app)
+
 def async_send(app,msg):
     with app.app_context():
         mail.send(msg)
@@ -28,26 +31,21 @@ def send_email(to,subject,template,**kwargs):
     return t1
     
 
-@app.route('/user/',methods=['GET','POST'])
+@app.route('/sendmail/',methods=['GET','POST'])
 #@login_required
 #@admin_required
-def isuser_exist():
+def sendmail():
     if request.method == 'POST':
-        user_record = User.query.filter_by(username=request.form['uname']).first()
-        session['known'] = False
-        if user_record is None:
-            user_record=User(username=request.form['uname'])
-            send_email(app.config['FLASKY_ADMIN'],'new user',\
-                'mail/welcomenewuser',user=user_record)
-        else:
-            session['known'] = True
-        session['name'] = request.form['uname']
-        return redirect(url_for('isuser_exist'))
-    return render_template('isuser_exist.html',name=session.get('name'),\
-        known=session.get('known',False))   
+        to=request.form['emails']
+        subject=request.form['subject']
+        content=request.form['sendcontent']
+        print repr(to)
+        print repr(subject)
+        print repr(content)
+        #send_email2(to,subject,content)
+        return redirect(url_for('sendmail'))
+    return render_template('mail/sendmail.html')   
 
-mail=Mail(app)
-manager=Manager(app)
 
 class World(Command):
     'print World lala string'
