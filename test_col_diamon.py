@@ -182,6 +182,13 @@ def test():
     #return 'yes,you are allowed,{0}'.format(current_user.username)
     return render_template('index.html')
 
+@app.route('/test/')
+#@login_required
+#@admin_required
+def realtest():
+    print repr(render_template('test.html'))
+    return 'hehe'
+
 @app.route('/data/')
 @login_required
 def data():

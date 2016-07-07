@@ -1,0 +1,18 @@
+<html>
+<head>
+<title>Flasky</title>
+</head>
+<body>
+<div class="page-header">
+    <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+    {% if not known %}
+    <p>Pleased to meet you!</p>
+    {% else %}
+    <p>Happy to see you again!</p>
+    {% endif %}
+</div>
+<form method='post' enctype='multipart/form-data' charset='utf-8'>
+username:<input type='text' name='uname'/><br/>
+<input type='submit' value='提交'/>
+</body>
+</html>
