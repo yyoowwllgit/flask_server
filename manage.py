@@ -30,6 +30,15 @@ def send_email(to,subject,template,**kwargs):
     t1.start()
     return t1
     
+def send_email2(to,subject,content):
+    to=to.split(';')
+    msg=Message(subject,sender=app.config['FLASKY_MAIL_SENDER'],recipients=to)
+    msg.body=content
+    print 'send mail2'
+    #mail.send(msg)
+    t1=Thread(target=async_send,args=(app,msg))
+    t1.start()
+    return t1
 
 @app.route('/sendmail/',methods=['GET','POST'])
 #@login_required
@@ -42,7 +51,7 @@ def sendmail():
         print repr(to)
         print repr(subject)
         print repr(content)
-        #send_email2(to,subject,content)
+        send_email2(to,subject,content)
         return redirect(url_for('sendmail'))
     return render_template('mail/sendmail.html')   
 
