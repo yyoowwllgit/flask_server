@@ -1,7 +1,8 @@
 import os
 from flask_script import Manager,Command,Option
+from threading import Thread
 from flask_mail import Mail,Message
-from test_col_diamon import app,request,render_template,session,User,redirect,url_for
+from test_col_diamon import app,request,render_template,session,User,redirect,url_for,db
 app.config['MAIL_SERVER']='smtp.sina.com'
 app.config['MAIL_PORT']=25
 app.config['MAIL_USE_TLS']=True
@@ -10,13 +11,23 @@ app.config['MAIL_PASSWORD']=os.environ.get('mailpassword')
 app.config['FLASKY_ADMIN']=os.environ.get('FLASKY_ADMIN')
 app.config['FLASKY_MAIL_SUBJECT_PREFIX']='[Flasky]'
 app.config['FLASKY_MAIL_SENDER']='Flasky Admin <huangpeng1a@sina.com>'
+
+def async_send(app,msg):
+    with app.app_context():
+        mail.send(msg)
+
 def send_email(to,subject,template,**kwargs):
     msg=Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject,\
         sender=app.config['FLASKY_MAIL_SENDER'],recipients=[to])
     msg.body=render_template(template+'.txt',**kwargs)
     msg.html=render_template(template+'.html',**kwargs)
     print 'send mail'
-    mail.send(msg)
+    #mail.send(msg)
+    t1=Thread(target=async_send,args=(app,msg))
+    t1.start()
+    return t1
+    
+
 @app.route('/user/',methods=['GET','POST'])
 #@login_required
 #@admin_required
