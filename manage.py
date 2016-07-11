@@ -1,6 +1,7 @@
 import os
 from flask_script import Manager,Command,Option
 from threading import Thread
+from celery import Celery
 from flask_mail import Mail,Message
 from test_col_diamon import app,request,render_template,session,User,redirect,url_for,db
 app.config['MAIL_SERVER']='smtp.sina.com'
@@ -11,11 +12,15 @@ app.config['MAIL_PASSWORD']=os.environ.get('mailpassword')
 app.config['FLASKY_ADMIN']=os.environ.get('FLASKY_ADMIN')
 app.config['FLASKY_MAIL_SUBJECT_PREFIX']='[Flasky]'
 app.config['FLASKY_MAIL_SENDER']='Flasky Admin <huangpeng1a@sina.com>'
-
+app.config['CELERY_BROKER_URL']='redis://127.0.0.1:6379/0'
+app.config['CELERY_RESULT_BACKEND']='redis://127.0.0.1:6379/0'
+celery = Celery('manage',broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 mail=Mail(app)
 manager=Manager(app)
 
-def async_send(app,msg):
+@celery.task
+def async_send(msg):
     with app.app_context():
         mail.send(msg)
 
@@ -26,7 +31,7 @@ def send_email(to,subject,template,**kwargs):
     msg.html=render_template(template+'.html',**kwargs)
     print 'send mail'
     #mail.send(msg)
-    t1=Thread(target=async_send,args=(app,msg))
+    t1=Thread(target=async_send,args=(msg,))
     t1.start()
     return t1
     
@@ -36,9 +41,9 @@ def send_email2(to,subject,content):
     msg.body=content
     print 'send mail2'
     #mail.send(msg)
-    t1=Thread(target=async_send,args=(app,msg))
-    t1.start()
-    return t1
+    #t1=Thread(target=async_send,args=(msg,))
+    async_send.delay(msg)
+    return 'send mail2 complete' 
 
 @app.route('/sendmail/',methods=['GET','POST'])
 #@login_required
