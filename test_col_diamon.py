@@ -183,11 +183,27 @@ def test():
     return render_template('index.html')
 
 @app.route('/test/')
-#@login_required
+@login_required
 #@admin_required
 def realtest():
     print repr(render_template('test.html'))
     return 'hehe'
+
+@app.route('/modify_pw/',methods=['GET','POST'])
+@login_required
+@admin_required
+def modify_pw():
+    if request.method == 'GET':
+        return render_template('modify_pw.html',tip=u"请设置重置用户和密码")
+    if request.form['uname'] == 'admin':
+        return render_template('modify_pw.html',tip=u"超级管理员不能被修改密码")
+    user=User.query.filter_by(username=request.form['uname']).first()
+    if not user:
+        return render_template('modify_pw.html',tip=u"指定的用户不存在")
+    user.password=request.form['passwd']
+    db.session.add(user)
+    db.session.commit()
+    return 'modify success'
 
 @app.route('/data/')
 @login_required
